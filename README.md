@@ -1,15 +1,15 @@
 <div align="center">
 
-<img src="https://capsule-render.vercel.app/api?type=waving&color=0:6a11cb,100:2575fc&height=220&section=header&text=🎙️%20Voice%20Aura%20v1.0&fontSize=52&fontColor=ffffff&animation=fadeIn&fontAlignY=40&desc=A%20Complete%20Voice%20Webapp%20Developed%20in%20AI%20Studio%20by%20Google&descAlignY=62&descSize=15&descColor=ccddff" width="100%"/>
+<img src="https://capsule-render.vercel.app/api?type=waving&color=0:6a11cb,50:2575fc,100:00ffcc&height=220&section=header&text=🎙️%20Voice%20Aura%20v2.0&fontSize=52&fontColor=ffffff&animation=fadeIn&fontAlignY=40&desc=Agentic%20Voice%20AI%20%7C%20Universal%20API%20Provider%20Support%20%7C%20Vite%20%2B%20TypeScript&descAlignY=62&descSize=15&descColor=ccddff" width="100%"/>
 
 <br/>
 
 [![Build](https://img.shields.io/badge/build-passing-brightgreen?style=for-the-badge&logo=github)](https://github.com/tabrezahmed51/Voice-Aura-v1.0)
-[![Version](https://img.shields.io/badge/version-1.0-orange?style=for-the-badge)](https://github.com/tabrezahmed51/Voice-Aura-v1.0/releases)
+[![Version](https://img.shields.io/badge/version-2.0-00ffcc?style=for-the-badge&logoColor=white)](#)
 [![License](https://img.shields.io/badge/license-MIT-blue?style=for-the-badge)](LICENSE)
 [![TypeScript](https://img.shields.io/badge/TypeScript-98.4%25-3178c6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Providers](https://img.shields.io/badge/API%20Providers-9%2B%20Supported-bf5fff?style=for-the-badge)](#-supported-api-providers)
 [![Stars](https://img.shields.io/github/stars/tabrezahmed51/Voice-Aura-v1.0?style=for-the-badge&logo=github)](https://github.com/tabrezahmed51/Voice-Aura-v1.0/stargazers)
-[![Gemini](https://img.shields.io/badge/Powered%20by-Gemini%20API-4285F4?style=for-the-badge&logo=google&logoColor=white)](https://ai.google.dev/)
 
 <br/>
 
@@ -17,30 +17,64 @@
 
 </div>
 
-<br/>
-
 ---
 
 ## 📌 Overview
 
-**Voice Aura v1.0** is a browser-native voice interaction application built entirely in **Google AI Studio Build Mode**. It uses the **Gemini API** via the `@google/genai` SDK to deliver real-time conversational AI directly in the browser — no backend server required.
+**Voice Aura v2.0** is a fully agentic, browser-native voice AI application built with **Vite + TypeScript** and developed in **Google AI Studio**.
 
-Designed as a production-ready voice AI starter, it ships with a modular TypeScript architecture, environment-secured API key management, and a fully customisable UI built on Vite.
+This version introduces **Universal API Provider Support** — any user can open the app, add their own API key from any major AI provider, and access all features instantly. No code changes. No hardcoded keys. No restrictions.
+
+Powered by a centralized `apiAdapter` that normalizes requests across all providers, Voice Aura's agentic brain (**MOLTBOT**) can now run on any LLM backend the user chooses.
 
 ---
 
-## ✨ Features
+## 🆕 What's New in v2.0
+
+| # | Upgrade | Description |
+|---|---|---|
+| 1 | ⚙️ **Multi-API Provider Modal** | Gear icon in header opens full settings modal for any provider |
+| 2 | 🔌 **Universal API Adapter** | Centralized `apiAdapter.ts` normalizes all provider request formats |
+| 3 | 💾 **Persistent Config** | Keys, base URLs & models saved in `localStorage` — survive page refreshes |
+| 4 | 🟢 **Real-time Status Chip** | Header badge shows active AI kernel + model name live |
+| 5 | 🧪 **Connection Testing** | Test any key with real-time latency feedback before saving |
+| 6 | 🤖 **Agentic Brain (MOLTBOT)** | Floating assistant now runs on any provider via universal adapter |
+| 7 | 🎛️ **Dynamic UI Feedback** | Vocal Fingerprint displays the active neural kernel in real time |
+| 8 | 🔓 **Zero Restrictions** | No provider blocked, no cap, no forced defaults |
+
+---
+
+## 🔌 Supported API Providers
+
+> Open ⚙️ API Settings in the app → Select your provider → Paste your key → Save & Apply
+
+| Provider | Model Default | Key Format |
+|---|---|---|
+| 🟦 Google Gemini | `gemini-2.0-flash` | `AIza...` |
+| 🟩 OpenAI | `gpt-4o` | `sk-...` |
+| 🟧 Anthropic Claude | `claude-3-5-sonnet-20241022` | `sk-ant-...` |
+| 🟪 Mistral AI | `mistral-medium` | — |
+| ⚡ Groq | `llama3-8b-8192` | `gsk_...` |
+| 🤝 Together AI | `meta-llama/Llama-3-8b` | — |
+| 🤗 Hugging Face | `mistralai/Mixtral-8x7B` | `hf_...` |
+| 🔀 OpenRouter | `mistralai/mixtral-8x7b` | `sk-or-...` |
+| 🏠 Ollama (Local) | `llama3` | *(no key needed)* |
+| ➕ Custom Provider | user-defined | user-defined |
+
+---
+
+## ✨ Core Features
 
 | Feature | Description |
 |---|---|
-| 🎤 **Voice Interaction** | Speak naturally and receive instant AI-generated responses |
-| ⚡ **Gemini-Powered** | Uses Google's `@google/genai` SDK with Gemini models |
-| 🌐 **100% Web-Based** | Runs entirely in the browser, zero installs for end users |
-| 🔧 **Vite + TypeScript** | Fast HMR development, strict typing, clean builds |
+| 🎤 **Voice Interaction** | Speak naturally — get instant AI responses |
+| 🤖 **MOLTBOT Agent** | Autonomous floating assistant powered by your chosen LLM |
+| 🎙️ **Pronunciation Diagnostics** | Multimodal audio analysis via universal adapter |
+| 🧬 **Vocal Fingerprint** | Spectral analysis with active neural kernel display |
+| 🔊 **Voice Command Interpretation** | Intent detection routed through the API adapter |
+| 🌐 **100% Web-Based** | Runs entirely in the browser — zero installs |
+| 🔒 **Secure Key Handling** | Keys stored only in `localStorage` — never transmitted or logged |
 | 🎨 **Themeable UI** | Fully customisable colour palette and layout |
-| 🔒 **Secure Config** | API keys via `.env.local` — never hard-coded |
-| 📊 **Analytics Ready** | Hooks for usage tracking and performance metrics |
-| 🚀 **One-Click Deploy** | Native Google AI Studio + Cloud Run deployment support |
 
 ---
 
@@ -48,65 +82,86 @@ Designed as a production-ready voice AI starter, it ships with a modular TypeScr
 
 | Layer | Technology |
 |---|---|
-| **Frontend Framework** | Vite 5.x |
-| **Language** | TypeScript 5.x (98.4%) |
-| **AI SDK** | `@google/genai` (Google Gen AI JS/TS SDK) |
-| **AI Model** | Google Gemini API |
+| **Frontend** | Vite 5.x + TypeScript 5.x |
+| **AI Routing** | Universal `apiAdapter.ts` (custom) |
 | **Voice Capture** | Web Speech API (browser-native) |
+| **State / Config** | `localStorage` via `useApiConfig` hook |
+| **AI Providers** | 9+ via REST API (OpenAI-compatible + native adapters) |
 | **Runtime** | Node.js ≥ 18 |
-| **Deployment** | Google AI Studio / Cloud Run / Vercel |
+| **Deployment** | Google AI Studio / Vercel / Netlify / Cloud Run |
 
 ---
 
 ## 📐 System Architecture
 
 ```
-┌─────────────────┐     ┌──────────────────┐     ┌─────────────────────┐     ┌──────────────────┐
-│  Browser Client │────▶│ Web Speech API   │────▶│   @google/genai     │────▶│  Google AI Studio│
-│  Vite + TypeScript     │  Voice Capture   │     │   Gemini API Call   │     │  / Cloud Run     │
-└─────────────────┘     └──────────────────┘     └─────────────────────┘     └──────────────────┘
+┌──────────────┐    ┌─────────────────┐    ┌───────────────────────────┐
+│   Browser    │───▶│ Web Speech API  │───▶│     apiAdapter.ts         │
+│ Vite + TS    │    │  Voice Capture  │    │  Universal API Router     │
+└──────────────┘    └─────────────────┘    └────────────┬──────────────┘
+                                                        │
+              ┌─────────────────────────────────────────┼──────────────────────────────┐
+              ▼                 ▼                ▼                ▼                     ▼
+      ┌──────────────┐  ┌────────────┐  ┌────────────┐  ┌──────────────┐  ┌─────────────────┐
+      │ Google Gemini│  │  OpenAI    │  │ OpenRouter │  │ Hugging Face │  │ Ollama / Custom │
+      │  Native API  │  │ /v1/chat   │  │ /v1/chat   │  │  Inference   │  │  Self-Hosted    │
+      └──────────────┘  └────────────┘  └────────────┘  └──────────────┘  └─────────────────┘
 ```
 
 ---
 
 ## 📂 Folder Structure
 
-> Generated by Google AI Studio Build Mode · Vite + TypeScript template
-
 ```
 Voice-Aura-v1.0/
 │
-├── index.html                  # HTML entry shell (Vite root)
+├── index.html                       # HTML entry shell
 │
 ├── src/
-│   ├── index.tsx               # App entry point / root render
-│   ├── App.tsx                 # Root component
-│   ├── types.ts                # Shared TypeScript type definitions
+│   ├── index.tsx                    # App entry point
+│   ├── App.tsx                      # Root — wires modal + status chip
+│   ├── types.ts                     # Shared TypeScript interfaces
 │   │
-│   ├── components/             # Reusable UI components
-│   │   ├── VoiceButton.tsx     # Mic trigger & recording control
-│   │   ├── Waveform.tsx        # Animated audio waveform display
-│   │   └── ResponseCard.tsx    # AI response output card
+│   ├── components/
+│   │   ├── ApiSettingsModal.tsx     # ⚙️ Multi-provider settings modal
+│   │   ├── ProviderStatusChip.tsx   # 🟢 Active provider header badge
+│   │   ├── VoiceButton.tsx          # 🎤 Mic trigger & recording control
+│   │   ├── Waveform.tsx             # 〰️ Animated audio waveform
+│   │   ├── ResponseCard.tsx         # 💬 AI response output card
+│   │   ├── VocalFingerprint.tsx     # 🧬 Spectral analysis display
+│   │   └── FloatingAssistant.tsx    # 🤖 MOLTBOT agentic assistant
 │   │
-│   ├── services/               # External integrations
-│   │   ├── geminiService.ts    # Gemini API client (@google/genai)
-│   │   └── speechService.ts    # Web Speech API wrapper
+│   ├── services/
+│   │   ├── apiAdapter.ts            # 🔌 Universal provider router
+│   │   ├── providerConfig.ts        # 📋 Provider list, URLs & defaults
+│   │   ├── geminiService.ts         # Google Gemini native client
+│   │   └── speechService.ts        # Web Speech API wrapper
 │   │
-│   └── utils/                  # Utility helpers
-│       └── config.ts           # Environment variable loader
+│   ├── hooks/
+│   │   ├── useApiConfig.ts          # 💾 localStorage config hook
+│   │   ├── useVoice.ts              # 🎙️ Voice recording logic
+│   │   └── useGemini.ts             # Gemini response handler
+│   │
+│   ├── utils/
+│   │   ├── config.ts                # Env vars loader
+│   │   └── analytics.ts             # Usage tracking helpers
+│   │
+│   └── styles/
+│       ├── globals.css              # Global styles
+│       └── theme.css                # Colour palette variables
 │
-├── public/                     # Static assets (served as-is)
-│   └── header-image-16x9.png  # Hero banner image
+├── public/
+│   ├── header-image-16x9.png        # Hero banner
+│   └── favicon.ico
 │
-├── .env.local                  # 🔒 API key — NOT committed
-├── .env.example                # Safe env template for contributors
+├── dist/                            # Production build output
+├── metadata.json                    # AI Studio app metadata
+├── vite.config.ts
+├── tsconfig.json
+├── package.json
+├── .env.local                       # 🔒 Fallback key (not committed)
+├── .env.example                     # Safe template for contributors
 ├── .gitignore
-├── index.html
-├── metadata.json               # AI Studio app metadata
-├── package.json                # Dependencies & npm scripts
-├── package-lock.json
-├── tsconfig.json               # TypeScript compiler config
-├── vite.config.ts              # Vite build configuration
 └── README.md
 ```
 
@@ -116,7 +171,7 @@ Voice-Aura-v1.0/
 
 - **Node.js** ≥ 18.x
 - **npm** ≥ 9.x
-- A **Gemini API key** — [Get one free →](https://aistudio.google.com/app/apikey)
+- API key from **any supported provider** — [Get Gemini free →](https://aistudio.google.com/app/apikey)
 
 ---
 
@@ -130,17 +185,32 @@ cd Voice-Aura-v1.0
 # 2. Install dependencies
 npm install
 
-# 3. Set your Gemini API key
-echo "GEMINI_API_KEY=your_api_key_here" > .env.local
+# 3. (Optional) Set a fallback Gemini key
+echo "GEMINI_API_KEY=your_key_here" > .env.local
 
 # 4. Start the development server
 npm run dev
 
-# 5. Build for production
-npm run build
+# 5. Open the app → click ⚙️ API Settings → add your key → Save & Apply
 ```
 
-> ⚠️ **Never commit `.env.local`** — verify it is listed in `.gitignore` before pushing.
+> ✅ No API key in code required. Users configure their own key directly in the app UI.
+
+---
+
+## 🔑 First-Time User Flow
+
+```
+1. Open the app
+2. See prompt: "Welcome! Add your API key to get started → ⚙️ API Settings"
+3. Click the ⚙️ gear icon in the header
+4. Select your AI provider from the dropdown
+5. Paste your API key
+6. Click "Test Connection" → verify latency
+7. Click "Save & Apply"
+8. Status chip in header shows: ⚡ OpenRouter · mixtral-8x7b
+9. All features are now fully active
+```
 
 ---
 
@@ -148,11 +218,13 @@ npm run build
 
 | Platform | Status | Notes |
 |---|---|---|
-| Google AI Studio | ✅ Native | Recommended — zero config, built-in secrets |
+| Google AI Studio | ✅ Native | Recommended — zero config |
 | Google Cloud Run | ✅ Supported | One-click from AI Studio |
-| Vercel | ✅ Compatible | `npm run build` → deploy `dist/` |
+| Vercel | ✅ Compatible | `npm run build` → deploy `dist/` + set env vars |
 | Netlify | ✅ Compatible | Drag & drop `dist/` folder |
-| Cloudflare Pages | ✅ Compatible | Connect repo, set build command |
+| Cloudflare Pages | ✅ Compatible | Connect repo, auto-build |
+
+> ⚠️ On Vercel/Netlify: keys are entered by users in the UI modal — no server-side key needed.
 
 **[🔗 View Live Preview on AI Studio →](https://ai.studio/apps/ef5ab480-df21-431e-8981-0a4588886a40)**
 
@@ -160,17 +232,14 @@ npm run build
 
 ## 🤝 Contributing
 
-Contributions are welcome!
-
 ```bash
-# Fork → Clone → Branch → Commit → PR
 git checkout -b feature/your-feature-name
 git commit -m "feat: describe your change"
 git push origin feature/your-feature-name
 ```
 
 - Follow [Conventional Commits](https://www.conventionalcommits.org/)
-- Open issues for bugs or feature requests before submitting large PRs
+- Open an issue before submitting large PRs
 
 ---
 
@@ -178,7 +247,7 @@ git push origin feature/your-feature-name
 
 **Tabrez Ahmed** — [@tabrezahmed51](https://github.com/tabrezahmed51)
 
-Built with ❤️ using [Google AI Studio](https://aistudio.google.com) & [Gemini API](https://ai.google.dev)
+Built with ❤️ in [Google AI Studio](https://aistudio.google.com) · Upgraded with universal AI provider support.
 
 ---
 
@@ -190,8 +259,8 @@ Released under the **[MIT License](LICENSE)** — free to fork, modify, and dist
 
 <div align="center">
 
-<img src="https://capsule-render.vercel.app/api?type=waving&color=0:2575fc,100:6a11cb&height=120&section=footer" width="100%"/>
+<img src="https://capsule-render.vercel.app/api?type=waving&color=0:00ffcc,50:2575fc,100:6a11cb&height=120&section=footer" width="100%"/>
 
-<sub>Voice Aura v1.0 · Made with ❤️ by <a href="https://github.com/tabrezahmed51">Tabrez Ahmed</a> · Powered by Google Gemini API</sub>
+<sub>Voice Aura v2.0 · Universal AI · Made with ❤️ by <a href="https://github.com/tabrezahmed51">Tabrez Ahmed</a></sub>
 
 </div>
