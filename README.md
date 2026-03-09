@@ -1,5 +1,3 @@
-# `[Looks like the result wasn't safe to show. Let's switch things up and try something else!]`
-
 # 🎙️ Voice Aura v1.0  
 *A Complete Voice Webapp Developed in AI Studio by Google*
 
