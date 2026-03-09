@@ -4,16 +4,16 @@
 
 <br/>
 
-[![Build](https://img.shields.io/badge/build-passing-brightgreen?style=for-the-badge&logo=github)](https://github.com/tabrezahmed51/Voice-Aura-v1.0)
+[![Build](https://img.shields.io/badge/build-passing-brightgreen?style=for-the-badge&logo=github)](https://github.com/tabrezahmed51/Voice-Aura-v2.0)
 [![Version](https://img.shields.io/badge/version-2.0-00ffcc?style=for-the-badge&logoColor=white)](#)
 [![License](https://img.shields.io/badge/license-MIT-blue?style=for-the-badge)](LICENSE)
 [![TypeScript](https://img.shields.io/badge/TypeScript-98.4%25-3178c6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Providers](https://img.shields.io/badge/API%20Providers-9%2B%20Supported-bf5fff?style=for-the-badge)](#-supported-api-providers)
-[![Stars](https://img.shields.io/github/stars/tabrezahmed51/Voice-Aura-v1.0?style=for-the-badge&logo=github)](https://github.com/tabrezahmed51/Voice-Aura-v1.0/stargazers)
+[![Stars](https://img.shields.io/github/stars/tabrezahmed51/Voice-Aura-v2.0?style=for-the-badge&logo=github)](https://github.com/tabrezahmed51/Voice-Aura-v2.0/stargazers)
 
 <br/>
 
-**[🔗 Live Preview](https://ai.studio/apps/ef5ab480-df21-431e-8981-0a4588886a40)&nbsp;&nbsp;·&nbsp;&nbsp;[🐛 Report Bug](https://github.com/tabrezahmed51/Voice-Aura-v1.0/issues)&nbsp;&nbsp;·&nbsp;&nbsp;[✨ Request Feature](https://github.com/tabrezahmed51/Voice-Aura-v1.0/issues)**
+**[🔗 Live Preview](https://ai.studio/apps/ef5ab480-df21-431e-8981-0a4588886a40)&nbsp;&nbsp;·&nbsp;&nbsp;[🐛 Report Bug](https://github.com/tabrezahmed51/Voice-Aura-v2.0/issues)&nbsp;&nbsp;·&nbsp;&nbsp;[✨ Request Feature](https://github.com/tabrezahmed51/Voice-Aura-v2.0/issues)**
 
 </div>
 
@@ -100,12 +100,12 @@ Powered by a centralized `apiAdapter` that normalizes requests across all provid
 │ Vite + TS    │    │  Voice Capture  │    │  Universal API Router     │
 └──────────────┘    └─────────────────┘    └────────────┬──────────────┘
                                                         │
-              ┌─────────────────────────────────────────┼──────────────────────────────┐
-              ▼                 ▼                ▼                ▼                     ▼
-      ┌──────────────┐  ┌────────────┐  ┌────────────┐  ┌──────────────┐  ┌─────────────────┐
-      │ Google Gemini│  │  OpenAI    │  │ OpenRouter │  │ Hugging Face │  │ Ollama / Custom │
-      │  Native API  │  │ /v1/chat   │  │ /v1/chat   │  │  Inference   │  │  Self-Hosted    │
-      └──────────────┘  └────────────┘  └────────────┘  └──────────────┘  └─────────────────┘
+       ┌────────────────────────────────────────────────┼───────────────────────────┐
+       ▼                 ▼                ▼                ▼                         ▼
+┌──────────────┐  ┌────────────┐  ┌────────────┐  ┌──────────────┐  ┌─────────────────┐
+│ Google Gemini│  │  OpenAI    │  │ OpenRouter │  │ Hugging Face │  │ Ollama / Custom │
+│  Native API  │  │ /v1/chat   │  │ /v1/chat   │  │  Inference   │  │  Self-Hosted    │
+└──────────────┘  └────────────┘  └────────────┘  └──────────────┘  └─────────────────┘
 ```
 
 ---
@@ -113,7 +113,7 @@ Powered by a centralized `apiAdapter` that normalizes requests across all provid
 ## 📂 Folder Structure
 
 ```
-Voice-Aura-v1.0/
+Voice-Aura-v2.0/
 │
 ├── index.html                       # HTML entry shell
 │
@@ -154,13 +154,13 @@ Voice-Aura-v1.0/
 │   ├── header-image-16x9.png        # Hero banner
 │   └── favicon.ico
 │
-├── dist/                            # Production build output
 ├── metadata.json                    # AI Studio app metadata
-├── vite.config.ts
-├── tsconfig.json
-├── package.json
-├── .env.local                       # 🔒 Fallback key (not committed)
-├── .env.example                     # Safe template for contributors
+├── vite.config.ts                   # Vite build configuration
+├── tsconfig.json                    # TypeScript compiler config
+├── package.json                     # Dependencies & scripts
+├── package-lock.json
+├── .env.local                       # 🔒 Fallback API key (not committed)
+├── .env.example                     # Safe env template for contributors
 ├── .gitignore
 └── README.md
 ```
@@ -179,8 +179,8 @@ Voice-Aura-v1.0/
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/tabrezahmed51/Voice-Aura-v1.0.git
-cd Voice-Aura-v1.0
+git clone https://github.com/tabrezahmed51/Voice-Aura-v2.0.git
+cd Voice-Aura-v2.0
 
 # 2. Install dependencies
 npm install
@@ -202,13 +202,13 @@ npm run dev
 
 ```
 1. Open the app
-2. See prompt: "Welcome! Add your API key to get started → ⚙️ API Settings"
+2. See prompt → "Welcome! Add your API key to get started → ⚙️ API Settings"
 3. Click the ⚙️ gear icon in the header
 4. Select your AI provider from the dropdown
 5. Paste your API key
 6. Click "Test Connection" → verify latency
 7. Click "Save & Apply"
-8. Status chip in header shows: ⚡ OpenRouter · mixtral-8x7b
+8. Status chip shows: ⚡ OpenRouter · mixtral-8x7b
 9. All features are now fully active
 ```
 
@@ -220,7 +220,7 @@ npm run dev
 |---|---|---|
 | Google AI Studio | ✅ Native | Recommended — zero config |
 | Google Cloud Run | ✅ Supported | One-click from AI Studio |
-| Vercel | ✅ Compatible | `npm run build` → deploy `dist/` + set env vars |
+| Vercel | ✅ Compatible | `npm run build` → deploy `dist/` |
 | Netlify | ✅ Compatible | Drag & drop `dist/` folder |
 | Cloudflare Pages | ✅ Compatible | Connect repo, auto-build |
 
