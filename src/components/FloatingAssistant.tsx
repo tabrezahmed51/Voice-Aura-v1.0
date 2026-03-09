@@ -1,12 +1,13 @@
 
 import React, { useState, useRef, useEffect } from 'react';
-import { GoogleGenAI } from "@google/genai";
-import { ChatMessage, APIProvider, Language } from '../types';
+import { ChatMessage, Language } from '../types';
 import Selector from './Selector';
-import { LANGUAGES, HF_API_KEY } from '../constants';
+import { LANGUAGES } from '../constants';
+import { useApiConfig } from '../hooks/useApiConfig';
+import { callAiApi } from '../services/apiAdapter';
+import { PROVIDERS } from '../services/providerConfig';
 
 interface FloatingAssistantProps {
-  apiProviders: APIProvider[];
   chatInputValue: string;
   onChatInputValueChange: (value: string) => void;
   onAgentCommand?: (command: string) => void;
@@ -31,7 +32,8 @@ const SendIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height
 const AttachIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg>;
 const MicIcon = ({ active }: { active: boolean }) => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill={active ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={active ? "text-danger animate-pulse" : ""}><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>;
 
-const FloatingAssistant: React.FC<FloatingAssistantProps> = ({ apiProviders, chatInputValue, onChatInputValueChange, onAgentCommand }) => {
+const FloatingAssistant: React.FC<FloatingAssistantProps> = ({ chatInputValue, onChatInputValueChange, onAgentCommand }) => {
+  const { config: apiConfig } = useApiConfig();
   const [isOpen, setIsOpen] = useState(true);
   const [isMinimized, setIsMinimized] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
@@ -53,17 +55,11 @@ const FloatingAssistant: React.FC<FloatingAssistantProps> = ({ apiProviders, cha
   // Construct options for model selector
   const modelOptions = [
       { value: 'moltbot', label: '⭐ MOLTBOT (Autonomous Agent)' },
-      { value: 'default', label: 'System Default (Gemini 2.5)' },
-      { value: 'gemini-pro', label: 'Gemini 3 Pro' },
-      { value: 'gpt-4', label: 'GPT-4 (Simulated/BYOK)' },
-      { value: 'mistral-large', label: 'Mistral Large' },
-      { value: 'google-gamma', label: 'Google Gamma (Gemma 2)' },
-      { value: 'venice-ai-hf', label: 'VENICE AI Uncensored' },
-      ...apiProviders.map(p => ({ value: p.id, label: `${p.name} (${p.provider})` }))
+      { value: 'active', label: `⚡ Active: ${apiConfig.provider} (${apiConfig.model})` },
+      ...PROVIDERS.map(p => ({ value: p.id, label: `${p.name} (${p.model})` }))
   ];
 
   const callAI = async (prompt: string): Promise<string> => {
-      const provider = apiProviders.find(p => p.id === selectedProviderId);
       const systemPrompt = `You are Aura, an expert AI embedded in the 'Voice Aura' application. 
       You specialize in audio engineering, voice synthesis, DSP (Digital Signal Processing), and Python coding for audio. 
       
@@ -74,143 +70,29 @@ const FloatingAssistant: React.FC<FloatingAssistantProps> = ({ apiProviders, cha
       
       Provide concise, technical, and accurate answers. Be helpful and cyberpunk-themed in tone.`;
 
-      // 1. MOLTBOT (Default: Hugging Face with Gemini Fallback)
-      if (selectedProviderId === 'moltbot') {
-          if (onAgentCommand) onAgentCommand(prompt);
+      const fullPrompt = `${systemPrompt}\n\nUser Query: ${prompt}`;
 
-          // Attempt HF if key is present
-          if (HF_API_KEY) {
-              try {
-                  const controller = new AbortController();
-                  const timeoutId = setTimeout(() => controller.abort(), 5000);
+      try {
+          // If MoltBot is selected, we still use the active API config but prefix the response
+          const configToUse = selectedProviderId === 'moltbot' || selectedProviderId === 'active' 
+            ? apiConfig 
+            : { 
+                ...apiConfig, 
+                provider: selectedProviderId, 
+                model: PROVIDERS.find(p => p.id === selectedProviderId)?.model || apiConfig.model,
+                baseUrl: PROVIDERS.find(p => p.id === selectedProviderId)?.url || apiConfig.baseUrl
+              };
 
-                  const response = await fetch("https://api-inference.huggingface.co/models/mistralai/Mixtral-8x7B-Instruct-v0.1", {
-                      method: "POST",
-                      headers: { "Authorization": `Bearer ${HF_API_KEY}`, "Content-Type": "application/json" },
-                      body: JSON.stringify({
-                          inputs: `<s>[INST] ${systemPrompt}\n\n${prompt} [/INST]`,
-                          parameters: { max_new_tokens: 512, return_full_text: false, temperature: 0.7 }
-                      }),
-                      signal: controller.signal
-                  });
-                  clearTimeout(timeoutId);
-
-                  if (!response.ok) throw new Error(`Status ${response.status}`);
-                  const data = await response.json();
-                  if (Array.isArray(data) && data[0]?.generated_text) return `[MOLTBOT]: ${data[0].generated_text.trim()}`;
-                  throw new Error("Invalid response");
-              } catch (hfError: any) {
-                  console.warn("MoltBot HF Error, falling back to Gemini:", hfError);
-                  // Fall through to Gemini
-              }
+          if (selectedProviderId === 'moltbot' && onAgentCommand) {
+              onAgentCommand(prompt);
           }
 
-          // Fallback to Gemini
-          try {
-              const apiKey = process.env.GEMINI_API_KEY || process.env.API_KEY;
-              if (!apiKey) return "System Error: No Identity Token (API Key) found.";
-
-              const ai = new GoogleGenAI({ apiKey });
-              
-              // Add timeout to Gemini call
-              const response = await Promise.race([
-                  ai.models.generateContent({
-                      model: 'gemini-3-flash-preview',
-                      contents: [{ role: 'user', parts: [{ text: systemPrompt + "\n\nUser Query: " + prompt }] }]
-                  }),
-                  new Promise<any>((_, reject) => setTimeout(() => reject(new Error("Gemini API Timeout")), 10000))
-              ]);
-
-              return `[MOLTBOT/Fallback]: ${response.text || "No text"}`;
-          } catch (geminiError: any) {
-              return `MoltBot System Error: ${geminiError.message}`;
-          }
+          const response = await callAiApi(configToUse, fullPrompt);
+          const prefix = selectedProviderId === 'moltbot' ? '[MOLTBOT]: ' : '';
+          return prefix + response.text;
+      } catch (error: any) {
+          return `System Error: ${error.message || 'Neural Interface Unlinked.'}`;
       }
-
-      // 2. VENICE AI (Hugging Face)
-      if (selectedProviderId === 'venice-ai-hf') {
-          if (!HF_API_KEY) return "Error: HF_API_KEY missing.";
-          try {
-              const response = await fetch("https://api-inference.huggingface.co/models/mistralai/Mixtral-8x7B-Instruct-v0.1", {
-                  method: "POST",
-                  headers: { "Authorization": `Bearer ${HF_API_KEY}`, "Content-Type": "application/json" },
-                  body: JSON.stringify({
-                      inputs: `<s>[INST] ${systemPrompt}\n\n${prompt} [/INST]`,
-                      parameters: { max_new_tokens: 512, return_full_text: false, temperature: 0.7 }
-                  })
-              });
-              if (!response.ok) return `Venice Connection Failed (${response.status})`;
-              const data = await response.json();
-              return Array.isArray(data) && data[0]?.generated_text ? data[0].generated_text.trim() : "Venice returned no data.";
-          } catch (e: any) { return `Venice Error: ${e.message}`; }
-      }
-
-      // 3. Google Gemini Pro
-      if (selectedProviderId === 'gemini-pro') {
-          const key = process.env.API_KEY;
-          if (!key) return "Error: Google API Key required.";
-          try {
-              const ai = new GoogleGenAI({ apiKey: key });
-              const response = await ai.models.generateContent({
-                  model: 'gemini-3-pro-preview',
-                  contents: [{ role: 'user', parts: [{ text: systemPrompt + "\n\n" + prompt }] }]
-              });
-              return response.text || "No content returned.";
-          } catch (e: any) { return `Gemini Pro Error: ${e.message}`; }
-      }
-
-      // 4. Mistral Large (Via HF)
-      if (selectedProviderId === 'mistral-large') {
-          if (!HF_API_KEY) return "Error: HF_API_KEY required for Mistral.";
-          try {
-              const response = await fetch("https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.2", {
-                  method: "POST",
-                  headers: { "Authorization": `Bearer ${HF_API_KEY}`, "Content-Type": "application/json" },
-                  body: JSON.stringify({
-                      inputs: `<s>[INST] ${systemPrompt}\n\n${prompt} [/INST]`,
-                      parameters: { max_new_tokens: 512, return_full_text: false }
-                  })
-              });
-              const data = await response.json();
-              return Array.isArray(data) && data[0]?.generated_text ? `[Mistral]: ${data[0].generated_text.trim()}` : "Mistral error.";
-          } catch (e: any) { return `Mistral Error: ${e.message}`; }
-      }
-
-      // 5. GPT-4 (Simulated or BYOK)
-      if (selectedProviderId === 'gpt-4') {
-          const provider = apiProviders.find(p => p.provider === 'OpenAI');
-          if (provider && provider.key) {
-             return "[GPT-4 (BYOK)]: Integration pending backend proxy. Using simulated response: I understand your request regarding audio synthesis.";
-          }
-          return "[GPT-4 Simulation]: This feature requires a valid OpenAI API key in Settings > Nexus Hub. Currently running in simulation mode.";
-      }
-
-      // 6. Google Gamma (Gemma) & Default
-      if (selectedProviderId === 'default' || selectedProviderId === 'google-gamma' || provider?.provider === 'Google') {
-          const key = (selectedProviderId === 'default' || selectedProviderId === 'google-gamma') ? process.env.API_KEY : provider?.key;
-          if (!key) return "Error: No API Key found.";
-          
-          try {
-              const ai = new GoogleGenAI({ apiKey: key });
-              const model = selectedProviderId === 'google-gamma' ? 'gemma-2-9b-it' : 'gemini-3-flash-preview';
-              // Check if model exists or fallback
-              try {
-                  const response = await ai.models.generateContent({
-                      model: model,
-                      contents: [{ role: 'user', parts: [{ text: systemPrompt + "\n\n" + prompt }] }]
-                  });
-                  return response.text || "No response.";
-              } catch(e) {
-                  const response = await ai.models.generateContent({
-                      model: 'gemini-3-flash-preview',
-                      contents: [{ role: 'user', parts: [{ text: systemPrompt + "\n\n" + prompt }] }]
-                  });
-                  return response.text || "No response (Fallback).";
-              }
-          } catch (e: any) { return `Gemini Error: ${e.message}`; }
-      }
-
-      return "System Error: Neural Interface Unlinked.";
   };
 
   const handleSendMessage = async () => {

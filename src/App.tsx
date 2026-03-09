@@ -45,6 +45,10 @@ import AgentCommandCenter from './components/AgentCommandCenter';
 import MoltBotTab from './components/MoltBotTab';
 import ActionButton from './components/ActionButton';
 import LanguageManager from './components/LanguageManager';
+import ApiSettingsModal from './components/ApiSettingsModal';
+import ProviderStatusChip from './components/ProviderStatusChip';
+import { useApiConfig } from './hooks/useApiConfig';
+import { callAiApi } from './services/apiAdapter';
 
 const GlobalErrorToast = ({ message, onClose }: { message: string, onClose: () => void }) => (
   <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-[60] bg-danger/10 border border-danger text-danger px-6 py-4 rounded-xl shadow-glow-red flex items-center gap-4 animate-fade-in font-mono text-xs backdrop-blur-md">
@@ -193,6 +197,8 @@ const App: React.FC = () => {
   
   const [moltBotEnabled, setMoltBotEnabled] = useState(false);
   const [systemLogs, setSystemLogs] = useState<SystemLog[]>([]);
+  const [showApiSettings, setShowApiSettings] = useState(false);
+  const { config: apiConfig } = useApiConfig();
   const [agentState, setAgentState] = useState<AgentState>({
       status: 'idle',
       mode: 'autonomous',
@@ -427,65 +433,34 @@ const App: React.FC = () => {
               reader.readAsDataURL(wavBlob);
           });
 
-          const response = await ai.models.generateContent({
-              model: "gemini-2.5-flash",
-              contents: [
+          const promptParts = [
+              {
+                  inlineData: {
+                      data: base64Audio,
+                      mimeType: "audio/wav"
+                  }
+              },
+              {
+                  text: `Analyze the pronunciation of the following text in the provided audio: "${speechStudioText}". 
+                  Return a JSON object matching this schema:
                   {
-                      parts: [
-                          {
-                              inlineData: {
-                                  data: base64Audio,
-                                  mimeType: "audio/wav"
-                              }
-                          },
-                          {
-                              text: `Analyze the pronunciation of the following text in the provided audio: "${speechStudioText}". 
-                              Return a JSON object matching this schema:
-                              {
-                                "accuracy": "string (e.g. 85%)",
-                                "suggestions": ["string"],
-                                "feedback": "string",
-                                "wordScores": [
-                                  {
-                                    "word": "string",
-                                    "score": number (0-100),
-                                    "errorType": "intonation" | "stress" | "mispronunciation" | "none",
-                                    "phonemes": ["string"],
-                                    "suggestion": "string (optional)"
-                                  }
-                                ]
-                              }`
-                          }
-                      ]
-                  }
-              ],
-              config: {
-                  responseMimeType: "application/json",
-                  responseSchema: {
-                      type: Type.OBJECT,
-                      properties: {
-                          accuracy: { type: Type.STRING },
-                          suggestions: { type: Type.ARRAY, items: { type: Type.STRING } },
-                          feedback: { type: Type.STRING },
-                          wordScores: {
-                              type: Type.ARRAY,
-                              items: {
-                                  type: Type.OBJECT,
-                                  properties: {
-                                      word: { type: Type.STRING },
-                                      score: { type: Type.NUMBER },
-                                      errorType: { type: Type.STRING },
-                                      phonemes: { type: Type.ARRAY, items: { type: Type.STRING } },
-                                      suggestion: { type: Type.STRING }
-                                  },
-                                  required: ["word", "score", "errorType"]
-                              }
-                          }
-                      },
-                      required: ["accuracy", "suggestions", "feedback", "wordScores"]
-                  }
+                    "accuracy": "string (e.g. 85%)",
+                    "suggestions": ["string"],
+                    "feedback": "string",
+                    "wordScores": [
+                      {
+                        "word": "string",
+                        "score": number (0-100),
+                        "errorType": "intonation" | "stress" | "mispronunciation" | "none",
+                        "phonemes": ["string"],
+                        "suggestion": "string (optional)"
+                      }
+                    ]
+                  }`
               }
-          });
+          ];
+
+          const response = await callAiApi(apiConfig, promptParts);
 
           const result = JSON.parse(response.text || '{}');
           setPronunciationAnalysisResult(result);
@@ -511,8 +486,15 @@ const App: React.FC = () => {
         const styleGuidance = clonedVoice ? `(Style: ${clonedVoice.tone}, ${clonedVoice.accent} accent, ${clonedVoice.gender}) ` : "";
         const finalPrompt = styleGuidance + text;
 
-        const response = await ai.models.generateContent({
-            model: "gemini-2.5-flash-preview-tts",
+        // If provider is Gemini, use the user's key from config
+        const geminiKey = apiConfig.provider === 'gemini' ? apiConfig.apiKey : (process.env.GEMINI_API_KEY || process.env.API_KEY);
+        
+        if (!geminiKey) throw new Error("No Gemini API key found for TTS generation.");
+
+        const ttsAi = new GoogleGenAI({ apiKey: geminiKey });
+
+        const response = await ttsAi.models.generateContent({
+            model: apiConfig.provider === 'gemini' ? apiConfig.model : "gemini-2.5-flash-preview-tts",
             contents: { parts: [{ text: finalPrompt }] },
             config: {
                 responseModalities: [Modality.AUDIO],
@@ -689,17 +671,12 @@ const App: React.FC = () => {
               const base64data = reader.result?.toString().split(',')[1];
               if(!base64data) return;
 
-              // Send audio to Gemini to interpret intent
-              const response = await ai.models.generateContent({
-                  model: 'gemini-3-flash-preview',
-                  contents: {
-                      parts: [
-                          { inlineData: { mimeType: 'audio/wav', data: base64data } },
-                          { text: "Analyze this voice command. If the user wants to generate speech, return JSON: { action: 'generate', text: 'the text to speak' }. If they want to analyze pronunciation, return { action: 'analyze' }. Otherwise return { action: 'unknown' }." }
-                      ]
-                  },
-                  config: { responseMimeType: 'application/json' }
-              });
+              const promptParts = [
+                  { inlineData: { mimeType: 'audio/wav', data: base64data } },
+                  { text: "Analyze this voice command. If the user wants to generate speech, return JSON: { action: 'generate', text: 'the text to speak' }. If they want to analyze pronunciation, return { action: 'analyze' }. Otherwise return { action: 'unknown' }." }
+              ];
+
+              const response = await callAiApi(apiConfig, promptParts);
               
               const json = parseGeminiJson(response.text);
               if (json.action === 'generate' && json.text) {
@@ -745,16 +722,12 @@ const App: React.FC = () => {
                       try {
                           // 2. Send to Gemini for Detection
                           const supportedCodes = LANGUAGES.map(l => l.value).join(', ');
-                          const response = await ai.models.generateContent({
-                              model: 'gemini-3-flash-preview',
-                              contents: {
-                                  parts: [
-                                      { inlineData: { mimeType: 'audio/webm', data: base64data } },
-                                      { text: `Identify the spoken language. Return JSON: { language: 'code', confidence: number } where code is strictly one of: [${supportedCodes}]. Confidence is 0-100. Default to 'en-US' if unsure.` }
-                                  ]
-                              },
-                              config: { responseMimeType: 'application/json' }
-                          });
+                          const promptParts = [
+                              { inlineData: { mimeType: 'audio/webm', data: base64data } },
+                              { text: `Identify the spoken language. Return JSON: { language: 'code', confidence: number } where code is strictly one of: [${supportedCodes}]. Confidence is 0-100. Default to 'en-US' if unsure.` }
+                          ];
+
+                          const response = await callAiApi(apiConfig, promptParts);
                           
                           const json = parseGeminiJson(response.text);
                           const detectedLang = json.language as Language;
@@ -1236,18 +1209,16 @@ const App: React.FC = () => {
             reader.readAsDataURL(file);
         });
 
-        const response = await ai.models.generateContent({
-            model: "gemini-3-flash-preview",
-            contents: [
-                {
-                    parts: [
-                        { inlineData: { data: base64Audio, mimeType: file.type || "audio/wav" } },
-                        { text: "Analyze this voice sample. Provide a JSON object with: pitch (High/Medium/Low), tone (Warm/Formal/Energetic/Neutral), accent (American/British/Indian/Neutral), gender (Male/Female/Unspecified), style (Steady/Dynamic/Abrupt), and a qualityScore (0-100). Return ONLY the JSON." }
-                    ]
-                }
-            ],
-            config: { responseMimeType: "application/json" }
-        });
+        const promptParts = [
+            {
+                parts: [
+                    { inlineData: { data: base64Audio, mimeType: file.type || "audio/wav" } },
+                    { text: "Analyze this voice sample. Provide a JSON object with: pitch (High/Medium/Low), tone (Warm/Formal/Energetic/Neutral), accent (American/British/Indian/Neutral), gender (Male/Female/Unspecified), style (Steady/Dynamic/Abrupt), and a qualityScore (0-100). Return ONLY the JSON." }
+                ]
+            }
+        ];
+
+        const response = await callAiApi(apiConfig, promptParts[0].parts);
 
         const result = parseGeminiJson(response.text);
         
@@ -1686,6 +1657,14 @@ const App: React.FC = () => {
       <header className="p-4 sm:p-6 border-b border-tension-line/20 flex justify-between items-center bg-bg/95 backdrop-blur-3xl shrink-0 z-50">
           <Logo />
           <div className="flex items-center gap-4">
+              <ProviderStatusChip />
+              <button 
+                onClick={() => setShowApiSettings(true)}
+                className="p-2.5 rounded-full bg-carbon-base hover:bg-carbon-weave border border-white/5 text-text-dim hover:text-accent transition-all shadow-lg"
+                title="API Settings"
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+              </button>
               {moltBotEnabled && (
                   <button 
                     onClick={() => setShowMoltBot(true)}
@@ -1765,6 +1744,7 @@ const App: React.FC = () => {
           </main>
       </div>
       
+      <ApiSettingsModal isOpen={showApiSettings} onClose={() => setShowApiSettings(false)} />
       <MoltBotModal 
         isOpen={showMoltBot} 
         onClose={() => setShowMoltBot(false)} 
@@ -1776,7 +1756,6 @@ const App: React.FC = () => {
       <LivePodcastModal open={showLivePodcastModal} onClose={() => setShowLivePodcastModal(false)} clonedVoices={clonedVoices} />
       <DebugConsole />
       <FloatingAssistant 
-        apiProviders={apiProviders} 
         chatInputValue={chatInputValue} 
         onChatInputValueChange={setChatInputValue} 
         onAgentCommand={handleAgentCommand}

@@ -1,6 +1,8 @@
 
 import React, { useRef, useEffect } from 'react';
 import AudioPlayer from './AudioPlayer';
+import { useApiConfig } from '../hooks/useApiConfig';
+import { PROVIDERS } from '../services/providerConfig';
 
 interface MetricProps {
   label: string;
@@ -138,6 +140,9 @@ const PitchContour: React.FC<{ pitch: number | null, isActive: boolean }> = ({ p
 };
 
 const VocalFingerprint: React.FC<VocalFingerprintProps> = ({ similarity, audioBuffer, currentPitch, isActive = false }) => {
+  const { config: apiConfig } = useApiConfig();
+  const activeProvider = PROVIDERS.find(p => p.id === apiConfig.provider);
+
   const exportData = () => {
     const defaultFilename = `vocal_analysis_${Date.now()}.json`;
     const filename = prompt("Enter filename for export:", defaultFilename);
@@ -182,7 +187,7 @@ const VocalFingerprint: React.FC<VocalFingerprintProps> = ({ similarity, audioBu
       <div className="flex items-center justify-between border-b border-tension-line/20 pb-4">
         <div className="flex flex-col">
           <h3 className="text-xs font-black text-accent uppercase tracking-[0.2em] font-mono">Neural Analysis</h3>
-          <span className="text-[8px] text-text-dim font-mono">KERNEL: GEMINI-2.5-AUDIO-V4</span>
+          <span className="text-[8px] text-text-dim font-mono uppercase">KERNEL: {activeProvider?.name || apiConfig.provider}-{apiConfig.model}</span>
         </div>
         <div className="flex gap-2">
             <button 

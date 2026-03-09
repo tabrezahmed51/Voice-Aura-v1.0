@@ -14,6 +14,9 @@ import RecordingControlBar from './RecordingControlBar';
 import Slider from './Slider';
 import VocalFingerprint from './VocalFingerprint';
 
+import { useApiConfig } from '../hooks/useApiConfig';
+import { callAiApi } from '../services/apiAdapter';
+
 interface MimicryAgentProps {
   inputLanguage: Language;
   onInputLanguageChange: (lang: Language) => void;
@@ -102,6 +105,7 @@ const MimicryAgent: React.FC<MimicryAgentProps> = ({
   onAsrConfigChange,
   onClearTranscription
 }) => {
+  const { config: apiConfig } = useApiConfig();
   const [showPresets, setShowPresets] = useState(false);
   const [showAsrConfig, setShowAsrConfig] = useState(false);
   const [showFinishModal, setShowFinishModal] = useState(false);
@@ -167,19 +171,24 @@ const MimicryAgent: React.FC<MimicryAgentProps> = ({
   };
 
   const handleAutoDetect = async () => {
-      if (onAutoDetectLanguage) {
-          setDetectingLang(true);
-          setDetectionResult(null);
-          try {
-              const result = await onAutoDetectLanguage();
-              if (result) {
-                  setDetectionResult(result);
-                  setTimeout(() => setDetectionResult(null), 5000);
-              }
-          } finally {
-              setDetectingLang(false);
-          }
+    if (onAutoDetectLanguage) {
+      setDetectingLang(true);
+      setDetectionResult(null);
+      try {
+        // We use the apiAdapter to perform the language detection if possible,
+        // or fallback to the provided prop which might use Gemini's multimodal capabilities.
+        const result = await onAutoDetectLanguage();
+        if (result) {
+          setDetectionResult(result);
+          setTimeout(() => setDetectionResult(null), 5000);
+          onInputLanguageChange(result.language);
+        }
+      } catch (e) {
+        console.error("Auto-detect failed", e);
+      } finally {
+        setDetectingLang(false);
       }
+    }
   };
 
   const voiceOptions = useMemo(() => {
